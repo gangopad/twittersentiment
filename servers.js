@@ -14,16 +14,12 @@ var twit = new twitter({
 }),
 stream = null;
 
-app.set(‘port’, process.env.PORT || 8081);
-
-//Use the default port (for beanstalk) or default to 8081 locally
+// Configure app
+app.use(express.static(__dirname + '/public'));
+app.set('port', process.env.PORT || 8081);
 server.listen(app.get('port'));
 
-//Setup routing for app
-app.use(express.static(__dirname + '/public'));
-
 console.log("before receiving connection");
-
 //Create web sockets connection.
 io.sockets.on('connection', function (socket) {
 	console.log("after receiving connection");
