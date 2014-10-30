@@ -23,31 +23,34 @@ function initialize() {
   heatmap.setMap(map);
 
 	console.log("before io");
+	console.log("initial filter: " + filter);
+
   if(io !== undefined) {
 
     // Storage for WebSocket connections
     var socket = io.connect('twitternode-env-nckmmseqq5.elasticbeanstalk.com');
 //		var socket = io.connect('http://localhost:8081');
-//		var socket = io.connect('/');
 
 		console.log("before twitter stream");
     // This listens on the "twitter-steam" channel and data is 
     // received everytime a new tweet is receieved.
     socket.on('twitter-stream', function (data) {
-      //Add tweet to the heat map array.
-      var tweetLocation = new google.maps.LatLng(data.outputPoint.lng,data.outputPoint.lat);
-      liveTweets.push(tweetLocation);
-      //Flash a dot onto the map quickly
-      var image = "css/small-dot-icon.png";
-			var title = "@" + data.author + ": " + data.text;
-      var marker = new google.maps.Marker({
-        position: tweetLocation,
-        map: map,
-        icon: image
-      });
-      setTimeout(function(){
-        marker.setMap(null);
-      },600);
+			if(filter == "*" || data.text.indexOf(filter) > -1){
+				//Add tweet to the heat map array.
+				var tweetLocation = new google.maps.LatLng(data.outputPoint.lng,data.outputPoint.lat);
+				liveTweets.push(tweetLocation);
+				//Flash a dot onto the map quickly
+				var image = "css/small-dot-icon.png";
+				var title = "@" + data.author + ": " + data.text;
+				var marker = new google.maps.Marker({
+					position: tweetLocation,
+					map: map,
+					icon: image
+				});
+				setTimeout(function(){
+					marker.setMap(null);
+				},600);
+			}
     });
 
     // Listens for a success response from the server to 
