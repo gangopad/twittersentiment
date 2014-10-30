@@ -26,14 +26,13 @@ function initialize() {
   if(io !== undefined) {
 
     // Storage for WebSocket connections
-    var socket = io.connect('http://twitternode-env-ppsytgi9pm.elasticbeanstalk.com:8081');
+    var socket = io.connect('twitternode-env-nckmmseqq5.elasticbeanstalk.com:8081');
 //		socket = io.connect('http://localhost:8081');
 
 		console.log("before twitter stream");
     // This listens on the "twitter-steam" channel and data is 
     // received everytime a new tweet is receieved.
     socket.on('twitter-stream', function (data) {
-			console.log("got tweet");
       //Add tweet to the heat map array.
       var tweetLocation = new google.maps.LatLng(data.outputPoint.lng,data.outputPoint.lat);
       liveTweets.push(tweetLocation);
