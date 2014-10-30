@@ -33,7 +33,7 @@ function initialize() {
   if(io !== undefined) {
 
     // Storage for WebSocket connections
-    var socket = io.connect('http://twitternode-env-ppsytgi9pm.elasticbeanstalk.com/:8081');
+    var socket = io.connect('http://twitternode-env-ppsytgi9pm.elasticbeanstalk.com:8081');
 
 		console.log("before twitter stream");
     // This listens on the "twitter-steam" channel and data is 
