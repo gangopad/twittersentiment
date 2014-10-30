@@ -20,3 +20,5 @@ easy to identify locations.
 
 The software required was node.js, npm, 
 For executing the code itself, Elastic Beanstalk already is running it and starts the server by executing the command npm start. Nginx proxy server is also running on port 8081. You also need the Websockets, Twitter, and Express node modules. 
+
+Link to webapp: http://twitternode-env-nckmmseqq5.elasticbeanstalk.com
