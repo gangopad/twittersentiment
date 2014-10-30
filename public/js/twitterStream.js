@@ -22,18 +22,12 @@ function initialize() {
   });
   heatmap.setMap(map);
 
-	var loc = new google.maps.LatLng(0,0);
-	var m = new google.maps.Marker({
-		position: loc,
-		title: "Hello world!"
-	});
-	m.setMap(map);
-
 	console.log("before io");
   if(io !== undefined) {
 
     // Storage for WebSocket connections
     var socket = io.connect('http://twitternode-env-ppsytgi9pm.elasticbeanstalk.com:8081');
+//		socket = io.connect('http://localhost:8081');
 
 		console.log("before twitter stream");
     // This listens on the "twitter-steam" channel and data is 
