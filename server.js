@@ -17,38 +17,41 @@ stream = null;
 //Use the default port (for beanstalk) or default to 8081 locally
 server.listen(8081);
 
-//Setup rotuing for app
+//Setup routing for app
 app.use(express.static(__dirname + '/public'));
 
-console.log("before connection");
+console.log("before receiving connection");
 
 //Create web sockets connection.
 io.sockets.on('connection', function (socket) {
-	console.log("after connection");
+	console.log("after receiving connection");
 
   socket.on("start tweets", function() {
-		console.log("start tweets");
+		console.log("starting streaming tweets");
     if(stream === null) {
+
       //Connect to twitter stream passing in filter for entire world.
       twit.stream('statuses/filter', {'locations':'-180,-90,180,90'}, function(stream) {
           stream.on('data', function(data) {
+
               // Does the JSON result have coordinates
               if (data.coordinates){
                 if (data.coordinates !== null){
+
                   //If so then build up some nice json and send out to web sockets
-                  var outputPoint = {"lat": data.coordinates.coordinates[0],"lng": data.coordinates.coordinates[1]};
+                  var outputPoint = {"lat": data.coordinates.coordinates[0],
+																		 "lng": data.coordinates.coordinates[1]};
 									var tweet = { "outputPoint" : outputPoint,
 																"text" : data.text,
 																"author" : data.user.screen_name
 															};
-
-                  socket.broadcast.emit("twitter-stream", tweet);
-
-                  //Send out to web sockets channel.
-                  socket.emit('twitter-stream', tweet);
+									// Send out to web sockets channel
+									socket.emit('twitter-stream', tweet);
                 }
+								// Does the JSON result have a place field
                 else if(data.place){
                   if(data.place.bounding_box === 'Polygon'){
+
                     // Calculate the center of the bounding box for the tweet
                     var coord, _i, _len;
                     var centerLat = 0;
@@ -62,23 +65,33 @@ io.sockets.on('connection', function (socket) {
                     centerLat = centerLat / coords.length;
                     centerLng = centerLng / coords.length;
 
-                    // Build json object and broadcast it
+                    // Build json object
                     var outputPoint = {"lat": centerLat,"lng": centerLng};
 										var tweet = { "outputPoint" : outputPoint,
 																	"text" : data.text,
 																	"author" : data.user.screen_name
 																};
 
-										socket.broadcast.emit("twitter-stream", tweet);
+										// Send out to web sockets channel
+										socket.emit('twitter-stream', tweet);
                   }
                 }
               }
           });
+          stream.on('error', function(err) {
+						console.log(err);	
+					});
       });
     }
   });
 
+		socket.on('disconnect', function () {
+			io.sockets.emit('user disconnected');
+			console.log("user disconnected");
+		});
+
     // Emits signal to the client telling them that the
     // they are connected and can start receiving Tweets
     socket.emit("connected");
+		console.log("emitted connected message to client");
 });
