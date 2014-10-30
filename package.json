@@ -1,0 +1,14 @@
+{
+  "name": "twittermap",
+  "version": "0.0.1",
+  "author": "Esha Maharishi and Abhinav Mishra",
+  "private": true,
+  "scripts": {
+    "start": "node servers.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "twitter": "*",
+    "socket.io": "*"
+  }
+}
