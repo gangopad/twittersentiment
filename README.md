@@ -17,3 +17,6 @@ one of us and we'll push the code again. It seems to be some minor Websockets is
 
 The app also uses a nice heat map feature from Google Maps to show the clustering which is cool because then it's really
 easy to identify locations. 
+
+The software required was node.js, npm, 
+For executing the code itself, Elastic Beanstalk already is running it and starts the server by executing the command npm start. Nginx proxy server is also running on port 8081. You also need the Websockets, Twitter, and Express node modules. 
