@@ -1,11 +1,115 @@
+var gap = function(){
+console.log("\n\n\n\n"); 
+}
+
 var twitter = require('twitter'),
     express = require('express'),
     app = express(),
     http = require('http'),
     server = http.createServer(app),
-    io = require('socket.io').listen(server);
+    io = require('socket.io').listen(server),
+		AWS = require('aws-sdk'),
+		util = require('util');
 
-//Setup twitter stream api
+AWS.config.loadFromPath('./config.json'); 
+
+/* configure AWS
+AWS.config.update({
+    'region': 'us-west-2',
+    'accessKeyId': 'AKIAJ4ZMOHU2XKEHSN6Q',
+    'secretAccessKey': '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'
+});
+*/
+var sns = new AWS.SNS();
+var sqs = new AWS.SQS();
+
+// create SNS topic
+sns.createTopic({
+	'Name': 'twitternode'
+}, function (err, result) {
+	if (err !== null) {
+		console.log(util.inspect(err));
+		return;
+	}
+	var topicArn = result["TopicArn"];
+	console.log("topicArn: " + topicArn);
+
+	// create SQS queue
+	sqs.createQueue({
+		'QueueName': 'twitternode'
+	}, function (err, result) {
+		if (err !== null) {
+			console.log(util.inspect(err));
+			return;
+		}
+		var queueUrl = result["QueueUrl"];
+		console.log("queueUrl: " + queueUrl);
+
+		// get queue ARN
+		sqs.getQueueAttributes({
+			QueueUrl: queueUrl, 
+			AttributeNames: ["QueueArn"]
+		}, function (err, result) {
+			if (err !== null) {
+				console.log(util.inspect(err));
+				return;
+			}
+			var queueArn = result["Attributes"]["QueueArn"];
+			console.log("queueArn: " + queueArn);
+
+			// subscribe 
+			sns.subscribe({
+				'TopicArn': topicArn, 
+				'Protocol': 'sqs',
+				'Endpoint': queueArn 
+			}, function (err, result) {
+				if (err !== null) {
+						console.log(util.inspect(err));
+						return;
+				}
+				var subscriptionArn = result["SubscriptionArn"];	
+				console.log("subscriptionArn: " + subscriptionArn);
+
+				// allow topic to publish to queue
+				var attributes = {
+						"Version": "2008-10-17",
+						"Id": queueArn + "/SQSDefaultPolicy",
+						"Statement": [{
+										"Sid": "Sid" + new Date().getTime(),
+										"Effect": "Allow",
+										"Principal": {
+												"AWS": "*"
+										},
+										"Action": "SQS:SendMessage",
+										"Resource": queueArn,
+										"Condition": {
+												"ArnEquals": {
+														"aws:SourceArn": topicArn
+												}
+										}
+								}
+						]
+				};
+
+				sqs.setQueueAttributes({
+						QueueUrl: queueUrl,
+						Attributes: {
+								'Policy': JSON.stringify(attributes)
+						}
+				}, function (err, result) {
+						if (err !== null) {
+								console.log(util.inspect(err));
+								return;
+						}
+				}); // end set queue attributes callback
+			}); // end subscribe callback
+		}); // end getQueueAttributes callback
+	}); // end createQueue callback
+}); // end createTopic callback
+
+
+/*
+// configure twitter stream api
 var twit = new twitter({
   consumer_key: '0CNrAuSnFtRGcLvWWYzhCLuUr',
   consumer_secret: 'izhMtz1mQzHLLlvItZgBlXsOgJk0BjKLfCSgAlx3oyeijWySc7',
@@ -96,3 +200,5 @@ io.sockets.on('connection', function (socket) {
     socket.emit("connected");
 		console.log("emitted connected message to client");
 });
+
+*/
