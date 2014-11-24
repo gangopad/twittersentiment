@@ -130,7 +130,8 @@ io.sockets.on('connection', function (socket) {
 
   socket.on("start tweets", function() {
 		console.log("starting streaming tweets");
-
+var AWS = require('aws-sdk'), util = require('util');
+var sns = new AWS.SNS().client;
 		// TODO: print statement here for testing SQS
 
     if(stream === null) {
