@@ -26,6 +26,9 @@ io.sockets.on('connection', function (socket) {
 
   socket.on("start tweets", function() {
 		console.log("starting streaming tweets");
+
+		// TODO: print statement here for testing SQS
+
     if(stream === null) {
 
       //Connect to twitter stream passing in filter for entire world.
