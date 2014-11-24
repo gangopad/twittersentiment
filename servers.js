@@ -13,13 +13,6 @@ var twitter = require('twitter'),
 
 AWS.config.loadFromPath('./config.json'); 
 
-/* configure AWS
-AWS.config.update({
-    'region': 'us-west-2',
-    'accessKeyId': 'AKIAJ4ZMOHU2XKEHSN6Q',
-    'secretAccessKey': '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'
-});
-*/
 var sns = new AWS.SNS();
 var sqs = new AWS.SQS();
 
