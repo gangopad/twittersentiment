@@ -40,7 +40,15 @@ function initialize() {
 				var tweetLocation = new google.maps.LatLng(data.outputPoint.lng,data.outputPoint.lat);
 				liveTweets.push(tweetLocation);
 				//Flash a dot onto the map quickly
-				var image = "css/small-dot-icon.png";
+				var image;
+				console.log(data);
+				if(data["sentiment"] == "neutral")
+					image = "css/yellowdot.png";
+				else if(data["sentiment"] == "positive")
+					image = "css/greendot.png";
+				else
+					image = "css/reddot.png";
+
 				var title = "@" + data.author + ": " + data.text;
 				var marker = new google.maps.Marker({
 					position: tweetLocation,

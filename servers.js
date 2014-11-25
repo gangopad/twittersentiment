@@ -1,115 +1,120 @@
 var gap = function(){
-console.log("\n\n\n\n"); 
+	console.log("\n\n\n\n"); 
 }
 
 var twitter = require('twitter'),
-    express = require('express'),
-    app = express(),
-    http = require('http'),
-    server = http.createServer(app),
-    io = require('socket.io').listen(server),
+		express = require('express'),
+		app = express(),
+		http = require('http'),
+		server = http.createServer(app),
+		io = require('socket.io').listen(server),
 		AWS = require('aws-sdk'),
-		util = require('util');
+		util = require('util'),
+		AlchemyAPI = require('alchemyapi_node'); 
 
 AWS.config.loadFromPath('./config.json'); 
 
 var sns = new AWS.SNS();
 var sqs = new AWS.SQS();
+var alchemy = new AlchemyAPI(); 
+var topicArn;
 
 // create SNS topic
 sns.createTopic({
-	'Name': 'twitternode'
-}, function (err, result) {
-	if (err !== null) {
+		'Name': 'twitternode'
+		}, function (err, result) {
+		if (err !== null) {
 		console.log(util.inspect(err));
 		return;
-	}
-	var topicArn = result["TopicArn"];
-	console.log("topicArn: " + topicArn);
+		}
+		topicArn = result["TopicArn"];
+		//console.log("topicArn: " + topicArn);
 
-	// create SQS queue
-	sqs.createQueue({
-		'QueueName': 'twitternode'
-	}, function (err, result) {
-		if (err !== null) {
+		// create SQS queue
+		sqs.createQueue({
+			'QueueName': 'twitternode'
+			}, function (err, result) {
+			if (err !== null) {
 			console.log(util.inspect(err));
 			return;
-		}
-		var queueUrl = result["QueueUrl"];
-		console.log("queueUrl: " + queueUrl);
-
-		// get queue ARN
-		sqs.getQueueAttributes({
-			QueueUrl: queueUrl, 
-			AttributeNames: ["QueueArn"]
-		}, function (err, result) {
-			if (err !== null) {
-				console.log(util.inspect(err));
-				return;
 			}
-			var queueArn = result["Attributes"]["QueueArn"];
-			console.log("queueArn: " + queueArn);
+			var queueUrl = result["QueueUrl"];
+			//console.log("queueUrl: " + queueUrl);
 
-			// subscribe 
-			sns.subscribe({
-				'TopicArn': topicArn, 
-				'Protocol': 'sqs',
-				'Endpoint': queueArn 
-			}, function (err, result) {
-				if (err !== null) {
-						console.log(util.inspect(err));
-						return;
-				}
-				var subscriptionArn = result["SubscriptionArn"];	
-				console.log("subscriptionArn: " + subscriptionArn);
+			// get queue ARN
+			sqs.getQueueAttributes({
+QueueUrl: queueUrl, 
+AttributeNames: ["QueueArn"]
+}, function (err, result) {
+if (err !== null) {
+console.log(util.inspect(err));
+return;
+}
+var queueArn = result["Attributes"]["QueueArn"];
+//console.log("queueArn: " + queueArn);
 
-				// allow topic to publish to queue
-				var attributes = {
-						"Version": "2008-10-17",
-						"Id": queueArn + "/SQSDefaultPolicy",
-						"Statement": [{
-										"Sid": "Sid" + new Date().getTime(),
-										"Effect": "Allow",
-										"Principal": {
-												"AWS": "*"
-										},
-										"Action": "SQS:SendMessage",
-										"Resource": queueArn,
-										"Condition": {
-												"ArnEquals": {
-														"aws:SourceArn": topicArn
-												}
-										}
-								}
-						]
-				};
+// subscribe 
+sns.subscribe({
+	'TopicArn': topicArn, 
+	'Protocol': 'sqs',
+	'Endpoint': queueArn 
+	}, function (err, result) {
+	if (err !== null) {
+	console.log(util.inspect(err));
+	return;
+	}
+	var subscriptionArn = result["SubscriptionArn"];	
+	//console.log("subscriptionArn: " + subscriptionArn);
 
-				sqs.setQueueAttributes({
-						QueueUrl: queueUrl,
-						Attributes: {
-								'Policy': JSON.stringify(attributes)
-						}
-				}, function (err, result) {
-						if (err !== null) {
-								console.log(util.inspect(err));
-								return;
-						}
-				}); // end set queue attributes callback
-			}); // end subscribe callback
-		}); // end getQueueAttributes callback
-	}); // end createQueue callback
+	// allow topic to publish to queue
+	var attributes = {
+	"Version": "2008-10-17",
+	"Id": queueArn + "/SQSDefaultPolicy",
+	"Statement": [{
+	"Sid": "Sid" + new Date().getTime(),
+	"Effect": "Allow",
+	"Principal": {
+	"AWS": "*"
+	},
+	"Action": "SQS:SendMessage",
+	"Resource": queueArn,
+	"Condition": {
+		"ArnEquals": {
+			"aws:SourceArn": topicArn
+		}
+	}
+	}
+]
+	};
+
+	sqs.setQueueAttributes({
+QueueUrl: queueUrl,
+Attributes: {
+'Policy': JSON.stringify(attributes)
+}
+}, function (err, result) {
+if (err !== null) {
+console.log(util.inspect(err));
+return;
+}
+
+}); // end set queue attributes callback
+}); // end subscribe callback
+}); // end getQueueAttributes callback
+}); // end createQueue callback
 }); // end createTopic callback
 
 
+/****************************** TESTING ****************************/
 
 // configure twitter stream api
 var twit = new twitter({
-  consumer_key: '0CNrAuSnFtRGcLvWWYzhCLuUr',
-  consumer_secret: 'izhMtz1mQzHLLlvItZgBlXsOgJk0BjKLfCSgAlx3oyeijWySc7',
-  access_token_key: '2849409910-VD66zWkCZjLS55qZhs1qnoZPMTuPGNyLi3qJRPc',
-  access_token_secret: 'ljrW3nXgDbteBP765m2rgCTu1tW9HjtTCNEoBPNTaPfAk'
+consumer_key: '0CNrAuSnFtRGcLvWWYzhCLuUr',
+consumer_secret: 'izhMtz1mQzHLLlvItZgBlXsOgJk0BjKLfCSgAlx3oyeijWySc7',
+access_token_key: '2849409910-VD66zWkCZjLS55qZhs1qnoZPMTuPGNyLi3qJRPc',
+access_token_secret: 'ljrW3nXgDbteBP765m2rgCTu1tW9HjtTCNEoBPNTaPfAk'
 }),
-stream = null;
+		stream = null;
 
 // Configure app
 app.use(express.static(__dirname + '/public'));
@@ -119,102 +124,139 @@ server.listen(app.get('port'));
 console.log("before receiving connection");
 //Create web sockets connection.
 io.sockets.on('connection', function (socket) {
-	console.log("after receiving connection");
+		console.log("after receiving connection");
 
-  socket.on("start tweets", function() {
-		console.log("starting streaming tweets");
-var AWS = require('aws-sdk'), util = require('util');
-var sns = new AWS.SNS().client;
-		// TODO: print statement here for testing SQS
+		socket.on("start tweets", function() {
+			console.log("starting streaming tweets");
+			// TODO: print statement here for testing SQS
 
-    if(stream === null) {
+			if(stream === null) {
 
-      //Connect to twitter stream passing in filter for entire world.
-      twit.stream('statuses/filter', {'locations':'-180,-90,180,90'}, function(stream) {
-          stream.on('data', function(data) {
+			//Connect to twitter stream passing in filter for entire world.
+			twit.stream('statuses/filter', {'locations':'-180,-90,180,90'}, function(stream) {
+				stream.on('data', function(data) {
 
-              // Does the JSON result have coordinates
-              if (data.coordinates){
-                if (data.coordinates !== null){
+					function publish(tweet) {
+					sns.publish({
+TargetArn: topicArn,
+Message: JSON.stringify(tweet)
+}, 
+function(err,data){
+if (err){
+console.log("Error sending a message "+err);
+}
+});
+					}
 
-                  //If so then build up some nice json and send out to web sockets
-                  var outputPoint = {"lat": data.coordinates.coordinates[0],
-																		 "lng": data.coordinates.coordinates[1]};
-									var tweet = { "outputPoint" : outputPoint,
-																"text" : data.text,
-																"author" : data.user.screen_name
-															};
+					// Does the JSON result have coordinates
+					if (data.coordinates){
+					if (data.coordinates !== null){
 
-									// send message to be evaluated by SNS-SQS 
-									sns.publish({
-										TargetArn: topicArn,
-										Message: "testing", 
-										Subject: "TestSNS"}, 
-										function(err,data){
-										if (err){
-											console.log("Error sending a message "+err);
-										} else {
-											console.log("Sent message: "+data.MessageId);
-										}
-									});
+					//If so then build up some nice json and send out to web sockets
+					var outputPoint = {"lat": data.coordinates.coordinates[0],
+					"lng": data.coordinates.coordinates[1]};
+					var tweet = { "outputPoint" : outputPoint,
+						"text" : data.text,
+						"author" : data.user.screen_name,
+					};
 
-                }
-								// Does the JSON result have a place field
-                else if(data.place){
-                  if(data.place.bounding_box === 'Polygon'){
+					// send message to be evaluated by SNS-SQS 
+					publish(tweet);
 
-                    // Calculate the center of the bounding box for the tweet
-                    var coord, _i, _len;
-                    var centerLat = 0;
-                    var centerLng = 0;
+					}
+					// Does the JSON result have a place field
+					else if(data.place){
+						if(data.place.bounding_box === 'Polygon'){
 
-                    for (_i = 0, _len = coords.length; _i < _len; _i++) {
-                      coord = coords[_i];
-                      centerLat += coord[0];
-                      centerLng += coord[1];
-                    }
-                    centerLat = centerLat / coords.length;
-                    centerLng = centerLng / coords.length;
+							// Calculate the center of the bounding box for the tweet
+							var coord, _i, _len;
+							var centerLat = 0;
+							var centerLng = 0;
 
-                    // Build json object
-                    var outputPoint = {"lat": centerLat,"lng": centerLng};
-										var tweet = { "outputPoint" : outputPoint,
-																	"text" : data.text,
-																	"author" : data.user.screen_name
-																};
+							for (_i = 0, _len = coords.length; _i < _len; _i++) {
+								coord = coords[_i];
+								centerLat += coord[0];
+								centerLng += coord[1];
+							}
+							centerLat = centerLat / coords.length;
+							centerLng = centerLng / coords.length;
 
-										// send message to be evaluated by SNS-SQS 
-										sns.publish({
-											TargetArn: topicArn,
-											Message: "testing", 
-											Subject: "TestSNS"}, 
-											function(err,data){
-											if (err){
-												console.log("Error sending a message "+err);
-											} else {
-												console.log("Sent message: "+data.MessageId);
-											}
-										});
+							// Build json object
+							var outputPoint = {"lat": centerLat,"lng": centerLng};
+							var tweet = { "outputPoint" : outputPoint,
+								"text" : data.text,
+								"author" : data.user.screen_name,
+							};
 
-                  }
-                }
-              }
-          });
-          stream.on('error', function(err) {
-						console.log(err);	
-					});
-      });
-    }
-  });
+							// send message to be evaluated by SNS-SQS 
+							publish(tweet);	
 
-		socket.on('disconnect', function () {
-			io.sockets.emit('user disconnected');
-			console.log("user disconnected");
+						}
+					}
+					}
+});
+stream.on('error', function(err) {
+		console.log(err);	
+		});
+});
+}
+});
+
+socket.on('disconnect', function () {
+		io.sockets.emit('user disconnected');
+		console.log("user disconnected");
 		});
 
-    // Emits signal to the client telling them that the
-    // they are connected and can start receiving Tweets
-    socket.emit("connected");
-		console.log("emitted connected message to client");
+// Emits signal to the client telling them that the
+// they are connected and can start receiving Tweets
+socket.emit("connected");
+console.log("emitted connected message to client");
+
+/************************* WORKER FOR SQS QUEUE ************************/
+var sqs = new AWS.SQS();
+
+sqs.listQueues(null, function(err, data){
+		if (err) {
+		console.log(err, err.stack);
+		return;
+		}
+
+		var queueUrl = data["QueueUrls"][1];
+	//	console.log("queueUrl: " + queueUrl);
+
+		function readMessage() {
+		sqs.receiveMessage(
+			{ QueueUrl: queueUrl,
+WaitTimeSeconds: 20
+}, function(err, data){
+
+if( data["Messages"] != null) {
+	// get tweet from message
+	var body = JSON.parse(data["Messages"][0]["Body"]);	
+	var tweet = JSON.parse(body["Message"]);
+
+	// analyze sentiment
+	alchemy.sentiment("text", tweet["text"], {}, function(response) {
+		if (response["docSentiment"] != null)
+			tweet["sentiment"] = response["docSentiment"]["type"];
+			// send tweet and related data across web socket
+			socket.emit('twitter-stream', tweet);
+	});
+}
+
+// delete the message when we've successfully processed it
+var deleteMessageParams = {
+QueueUrl: queueUrl,
+					ReceiptHandle: data.Messages[0].ReceiptHandle
+};
+sqs.deleteMessage(deleteMessageParams, function(err, data){}); // end delete message callback
+readMessage();
+}); // end receive message callback
+}
+
+readMessage();
+
+}); // end listQueues callback
+
 });
 
