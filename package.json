@@ -1,0 +1,14 @@
+{
+  "name": "twittermap",
+  "version": "0.0.1",
+  "author": "Anirban Gangopadhyay",
+  "private": true,
+  "scripts": {
+    "start": "node CollectTweets.js"
+  },
+  "dependencies": {
+    "express": "*",
+    "twitter": "*",
+    "socket.io": "*"
+  }
+}
