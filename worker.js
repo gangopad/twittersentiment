@@ -1,42 +1,51 @@
 var AWS = require('aws-sdk');
-    AWS.config.loadFromPath('./config.json');
+    AWS.config.loadFromPath('./config.json'),
+    alchemy = require('alchemy');
 
 var sqs = new AWS.SQS();
 
 sqs.listQueues(null, function(err, data){
-	if(err) console.log(err, err.stack);
-	else console.log(data);
-});
+	if (err) {
+		console.log(err, err.stack);
+		
+		return;
+	}
 
-/*
-var queueUrl = "https://sqs.eu-west-1.amazonaws.com/XXXXXXXXXXXX/dummy-queue";
+	var queueUrl = data["QueueUrls"][1];
+	console.log("queueUrl: " + queueUrl);
 
-var receiveMessageParams = {
-  QueueUrl: queueUrl
-};
+	function readMessage() {
+		console.log("waiting for message");
+		sqs.receiveMessage(
+			{ QueueUrl: queueUrl,
+				WaitTimeSeconds: 20
+			}, function(err, data){
+			console.log("received message");
+			console.log(data);
 
-sqs.receiveMessage(receiveMessageParams, receiveMessageCallback);
+			// process message
+			var tweet = "hello";
 
-function receiveMessageCallback(err, data) {
-  console.log("received message");
-  console.log(data);
+			// send tweet and related data across web socket
+			socket.emit('twitter-stream', tweet);
+	
+			// delete the message when we've successfully processed it
+			var deleteMessageParams = {
+				QueueUrl: queueUrl,
+				ReceiptHandle: data.Messages[0].ReceiptHandle
+			};
+			sqs.deleteMessage(deleteMessageParams, function(err, data){
+				console.log("deleted message");
+				console.log(data);
+			}); // end delete message callback
+			readMessage();
+		}); // end receive message callback
+	}
 
-  if (data.Messages && data.Messages.length > 0) {
+	readMessage();
 
-    console.log("do something with the message here...");
 
-    // Delete the message when we've successfully processed it
-    var deleteMessageParams = {
-      QueueUrl: queueUrl,
-      ReceiptHandle: data.Messages[0].ReceiptHandle
-    };
+}); // end listQueues callback
 
-    sqs.deleteMessage(deleteMessageParams, deleteMessageCallback);
-  }
-}
 
-function deleteMessageCallback(err, data) {
-  console.log("deleted message");
-  console.log(data);
-}
-*/
+

@@ -101,7 +101,7 @@ sns.createTopic({
 }); // end createTopic callback
 
 
-/*
+
 // configure twitter stream api
 var twit = new twitter({
   consumer_key: '0CNrAuSnFtRGcLvWWYzhCLuUr',
@@ -144,8 +144,20 @@ var sns = new AWS.SNS().client;
 																"text" : data.text,
 																"author" : data.user.screen_name
 															};
-									// Send out to web sockets channel
-									socket.emit('twitter-stream', tweet);
+
+									// send message to be evaluated by SNS-SQS 
+									sns.publish({
+										TargetArn: topicArn,
+										Message: "testing", 
+										Subject: "TestSNS"}, 
+										function(err,data){
+										if (err){
+											console.log("Error sending a message "+err);
+										} else {
+											console.log("Sent message: "+data.MessageId);
+										}
+									});
+
                 }
 								// Does the JSON result have a place field
                 else if(data.place){
@@ -171,8 +183,19 @@ var sns = new AWS.SNS().client;
 																	"author" : data.user.screen_name
 																};
 
-										// Send out to web sockets channel
-										socket.emit('twitter-stream', tweet);
+										// send message to be evaluated by SNS-SQS 
+										sns.publish({
+											TargetArn: topicArn,
+											Message: "testing", 
+											Subject: "TestSNS"}, 
+											function(err,data){
+											if (err){
+												console.log("Error sending a message "+err);
+											} else {
+												console.log("Sent message: "+data.MessageId);
+											}
+										});
+
                   }
                 }
               }
@@ -195,4 +218,3 @@ var sns = new AWS.SNS().client;
 		console.log("emitted connected message to client");
 });
 
-*/
