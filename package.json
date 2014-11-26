@@ -1,10 +1,17 @@
 {
   "name": "twittermap",
   "version": "0.0.1",
+<<<<<<< HEAD
   "author": "Anirban Gangopadhyay",
   "private": true,
   "scripts": {
     "start": "node CollectTweets.js"
+=======
+  "author": "Esha Maharishi and Abhinav Mishra",
+  "private": true,
+  "scripts": {
+    "start": "node servers.js"
+>>>>>>> 8a0de14e631e58d91b9b18a3fb6ab6301e6988fb
   },
   "dependencies": {
     "express": "*",

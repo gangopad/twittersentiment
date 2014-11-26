@@ -69,4 +69,7 @@ function FMEServer(svrHost, token, svrPort, isSSL) {
 		return wsConn;
 	}
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8a0de14e631e58d91b9b18a3fb6ab6301e6988fb

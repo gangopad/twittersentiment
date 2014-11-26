@@ -2,6 +2,7 @@
 <html lang="en">
 <meta charset="UTF-8">
 <head>
+<<<<<<< HEAD
 	<!-- Safe Software, 2013 -->
 	<!-- http://www.safe.com -->
 
@@ -17,11 +18,24 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="/libs/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
   
+=======
+
+	<title>TwitterMap</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Socket.IO -->
+	<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+
+	<!-- JQuery -->
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+>>>>>>> 8a0de14e631e58d91b9b18a3fb6ab6301e6988fb
 	<!-- Google Maps -->
 	<link href="https://google-developers.appspot.com/maps/documentation/javascript/examples/default.css" rel="stylesheet" type="text/css" />
 	<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false&libraries=visualization"></script>
 
 	<!-- Generic -->
+<<<<<<< HEAD
 	<link rel="stylesheet" href="css/index.css">
 	<!-- Generic server specific functions -->
 	<script src="/js/FMEServer.js" type="text/javascript"></script>
@@ -29,12 +43,26 @@
 	<!-- Spatial Dashboard JavaScript -->
 	<script src="/js/twitterStream.js" type="text/javascript"></script>
 	<script> var filter = "*"; </script>
+=======
+	<link rel="stylesheet" href="./css/index.css">
+
+	<!-- Generic server specific functions -->
+	<script src="./js/FMEServer.js" type="text/javascript"></script>
+
+	<!-- Display tweets on map -->
+	<script src="./js/twitterStream.js" type="text/javascript"></script>
+
+	<script>
+		var filter="*";
+	</script>
+>>>>>>> 8a0de14e631e58d91b9b18a3fb6ab6301e6988fb
 
 </head>
 
 <body onload="initialize()">
 
 	<div class="container">
+<<<<<<< HEAD
 		<div class="container">
 		  <select onchange="filter=this.value; console.log('new filter: ' + filter);">
 		    <option value="ISIS">ISIS</option>
@@ -51,4 +79,22 @@
 
 	</div>
 </body>
+=======
+		<h2>Select tweet keyword filter here</h2>
+		<select onchange="filter=this.value; console.log('new filter: ' + filter);">
+			<option value="obama">obama</option>
+			<option value="modi">modi</option>
+			<option value="selena">selena</option>
+			<option value="justin">justin</option>
+			<option value="I">I</option>
+			<option value="we">we</option>
+			<option value="*">[all] (default)</option>
+		</select>
+		<h2>map</h2>
+		<div id="map_canvas"></div>
+	</div>
+
+</body>
+
+>>>>>>> 8a0de14e631e58d91b9b18a3fb6ab6301e6988fb
 </html>
